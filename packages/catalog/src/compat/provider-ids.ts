@@ -34,6 +34,7 @@ export type KnownProvider =
 	| "google-vertex"
 	| "groq"
 	| "huggingface"
+	| "ionet"
 	| "kilo"
 	| "kimi-code"
 	| "litellm"

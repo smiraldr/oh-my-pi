@@ -1,0 +1,8 @@
+// Provider-wire compat for "ionet" (IO Intelligence by io.net).
+
+provider "ionet" {
+	default-model "openai/gpt-oss-20b"
+	env "IONET_API_KEY"
+	dynamic-models-authoritative #true
+	discovery label="IO Intelligence" allow-unauthenticated=#true
+}
