@@ -3,12 +3,16 @@ import { DEFAULT_MODEL_PER_PROVIDER, PROVIDER_DESCRIPTORS } from "@oh-my-pi/pi-c
 import { ionetModelManagerOptions } from "@oh-my-pi/pi-catalog/provider-models/openai-compat";
 
 describe("IO Intelligence built-in provider", () => {
-	test("registers catalog descriptor with IONET_API_KEY env discovery", () => {
+	test("registers catalog descriptor with keyless runtime discovery", () => {
 		const descriptor = PROVIDER_DESCRIPTORS.find(item => item.providerId === "ionet");
 		expect(descriptor).toBeDefined();
 		expect(descriptor?.defaultModel).toBe("openai/gpt-oss-20b");
-		expect(descriptor?.catalogDiscovery?.envVars).toContain("IONET_API_KEY");
-		expect(descriptor?.catalogDiscovery?.allowUnauthenticated).toBe(true);
+		// No `discovery` node on purpose (charm-hyper's reasoning): the catalog
+		// drifts day to day, so generate-models.ts enrollment is declined and
+		// discovery stays runtime-only. The provider is reachable before login
+		// via the descriptor's top-level allowUnauthenticated flag.
+		expect(descriptor?.allowUnauthenticated).toBe(true);
+		expect(descriptor?.catalogDiscovery).toBeUndefined();
 		expect(descriptor?.dynamicModelsAuthoritative).toBe(true);
 		expect(DEFAULT_MODEL_PER_PROVIDER.ionet).toBe("openai/gpt-oss-20b");
 	});
