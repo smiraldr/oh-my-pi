@@ -25,8 +25,8 @@ describe("IO Intelligence built-in provider", () => {
 						supports_reasoning: true,
 						supports_tools: true,
 						input_modalities: ["text"],
-						context_window: 131072,
-						max_tokens: 32768,
+						context_window: 64000,
+						max_tokens: null,
 						input_token_price: 1.8e-7,
 						output_token_price: 6.8e-7,
 						cache_read_token_price: 9e-8,
@@ -48,8 +48,8 @@ describe("IO Intelligence built-in provider", () => {
 						name: "Meta: Llama 4 Maverick 17B 128E FP8",
 						supports_reasoning: false,
 						supports_tools: false,
-						input_modalities: ["text"],
-						context_window: 131072,
+						input_modalities: ["text", "image"],
+						context_window: 430000,
 						max_tokens: null,
 						input_token_price: null,
 						output_token_price: null,
@@ -79,16 +79,18 @@ describe("IO Intelligence built-in provider", () => {
 		expect(oss?.supportsTools).toBe(true);
 		expect(oss?.input).toEqual(["text"]);
 		expect(oss?.cost).toEqual({ input: 0.18, output: 0.68, cacheRead: 0.09, cacheWrite: 0 });
-		expect(oss?.contextWindow).toBe(131072);
-		expect(oss?.maxTokens).toBe(32768);
+		expect(oss?.contextWindow).toBe(64000);
+		expect(oss?.maxTokens).toBeNull();
 
 		// Vision-capable rows declare image input.
 		expect(flash?.input).toEqual(["text", "image"]);
 		expect(flash?.cost).toEqual({ input: 0.21, output: 0.7, cacheRead: 0.11, cacheWrite: 0 });
+		expect(flash?.maxTokens).toBe(131072);
 
 		// Null/absent optional fields fall back to defaults instead of NaN.
 		expect(maverick?.reasoning).toBe(false);
 		expect(maverick?.supportsTools).toBe(false);
+		expect(maverick?.input).toEqual(["text", "image"]);
 		expect(maverick?.maxTokens).toBeNull();
 		expect(maverick?.cost).toEqual({ input: 0, output: 0, cacheRead: 0, cacheWrite: 0 });
 	});

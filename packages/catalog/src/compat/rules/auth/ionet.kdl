@@ -5,7 +5,7 @@ auth "ionet" {
 		instructions "Create or copy your API key from the IO Intelligence console"
 		prompt "Paste your IO Intelligence API key"
 		// gpt-oss-20b sits in the lowest access tier, so validation works for
-		// every account; one-token completion keeps the cost negligible.
-		validate "chat-completions" base-url="https://api.intelligence.io.solutions/api/v1" model="openai/gpt-oss-20b" max-tokens=1
+		// every account; the engine's one-token default keeps the cost negligible.
+		validate "chat-completions" base-url="https://api.intelligence.io.solutions/api/v1" model="openai/gpt-oss-20b"
 	}
 }
