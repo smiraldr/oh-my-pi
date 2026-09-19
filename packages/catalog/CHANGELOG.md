@@ -1,6 +1,10 @@
 # Changelog
 
 ## [Unreleased]
+### Added
+
+- Added support for the IO Intelligence provider (`ionet`), io.net's OpenAI-compatible model API with unauthenticated model discovery, per-token pricing, and API-key authentication via the `IONET_API_KEY` environment variable.
+
 ### Fixed
 
 - Fixed Yolo-Auto advertising 1M context for Qwen Flash: `qwen3.8-flash` and the paid `yolo` route now resolve to the documented 256K deployment window with the Qwen chat-template reasoning dialect, and `qwen3.8-flash` is the provider default.

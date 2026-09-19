@@ -1341,69 +1341,6 @@ export function novitaModelManagerOptions(
 }
 
 // ---------------------------------------------------------------------------
-// 5.7 IO Intelligence (io.net)
-// ---------------------------------------------------------------------------
-
-/** IO Intelligence (io.net) discovery configuration. */
-export interface IonetModelManagerConfig {
-	apiKey?: string;
-	baseUrl?: string;
-	fetch?: FetchImpl;
-}
-
-// IO Intelligence reports per-token prices; ModelSpec cost is per million tokens.
-function toIonetCostPerMillion(value: unknown): number {
-	const perMillion = toPositiveNumber(value, 0) * 1_000_000;
-	// Round away binary-float noise (6.8e-7 per token is exactly $0.68 per million).
-	return Math.round(perMillion * 1e6) / 1e6;
-}
-
-function mapIonetModel(
-	entry: OpenAICompatibleModelRecord,
-	defaults: ModelSpec<"openai-completions">,
-): ModelSpec<"openai-completions"> {
-	const modalities = Array.isArray(entry.input_modalities) ? entry.input_modalities : [];
-	return {
-		...defaults,
-		reasoning: entry.supports_reasoning === true,
-		supportsTools: entry.supports_tools === true,
-		input: modalities.some(item => item === "image") ? ["text", "image"] : ["text"],
-		cost: {
-			input: toIonetCostPerMillion(entry.input_token_price),
-			output: toIonetCostPerMillion(entry.output_token_price),
-			cacheRead: toIonetCostPerMillion(entry.cache_read_token_price),
-			cacheWrite: 0,
-		},
-		contextWindow: toPositiveNumber(entry.context_window, defaults.contextWindow),
-		maxTokens: toPositiveNumber(entry.max_tokens, defaults.maxTokens),
-	};
-}
-
-/**
- * Builds IO Intelligence's public model-discovery manager. Hand-assembled like
- * `charmHyperModelManagerOptions`: io.net ships no bundled seed rows, so the
- * provider is absent from models.json and the shared builder's
- * `getBundledModels` provider-id constraint does not apply. `/models` is
- * served unauthenticated, so discovery runs without a key.
- */
-export function ionetModelManagerOptions(config?: IonetModelManagerConfig): ModelManagerOptions<"openai-completions"> {
-	const baseUrl = config?.baseUrl ?? "https://api.intelligence.io.solutions/api/v1";
-	return {
-		providerId: "ionet",
-		dynamicModelsAuthoritative: true,
-		fetchDynamicModels: () =>
-			fetchOpenAICompatibleModels({
-				api: "openai-completions",
-				provider: "ionet",
-				baseUrl,
-				apiKey: config?.apiKey,
-				fetch: config?.fetch,
-				mapModel: mapIonetModel,
-			}),
-	};
-}
-
-// ---------------------------------------------------------------------------
 // 5.6 DeepInfra
 // ---------------------------------------------------------------------------
 
@@ -1851,6 +1788,68 @@ export function xaiOAuthModelManagerOptions(
 			const dynamic = await inner();
 			return dynamic == null ? dynamic : applyXAIOAuthCuration(dynamic);
 		},
+	};
+}
+
+// ---------------------------------------------------------------------------
+// 5.7 IO Intelligence (io.net)
+// ---------------------------------------------------------------------------
+
+/** IO Intelligence (io.net) discovery configuration. */
+export interface IonetModelManagerConfig {
+	apiKey?: string;
+	baseUrl?: string;
+	fetch?: FetchImpl;
+}
+
+// IO Intelligence reports per-token prices; ModelSpec cost is per million tokens.
+function toIonetCostPerMillion(value: unknown): number {
+	const perMillion = toPositiveNumber(value, 0) * 1_000_000;
+	// Round away binary-float noise (6.8e-7 per token is exactly $0.68 per million).
+	return Math.round(perMillion * 1e6) / 1e6;
+}
+
+function mapIonetModel(
+	entry: OpenAICompatibleModelRecord,
+	defaults: ModelSpec<"openai-completions">,
+): ModelSpec<"openai-completions"> {
+	return {
+		...defaults,
+		reasoning: entry.supports_reasoning === true,
+		supportsTools: entry.supports_tools === true,
+		input: toInputCapabilities(entry.input_modalities),
+		cost: {
+			input: toIonetCostPerMillion(entry.input_token_price),
+			output: toIonetCostPerMillion(entry.output_token_price),
+			cacheRead: toIonetCostPerMillion(entry.cache_read_token_price),
+			cacheWrite: 0,
+		},
+		contextWindow: toPositiveNumber(entry.context_window, defaults.contextWindow),
+		maxTokens: toPositiveNumber(entry.max_tokens, defaults.maxTokens),
+	};
+}
+
+/**
+ * Builds IO Intelligence's public model-discovery manager. Hand-assembled like
+ * `charmHyperModelManagerOptions`: io.net ships no bundled seed rows, so the
+ * provider is absent from models.json and the shared builder's
+ * `getBundledModels` provider-id constraint does not apply. `/models` is
+ * served unauthenticated, so discovery runs without a key.
+ */
+export function ionetModelManagerOptions(config?: IonetModelManagerConfig): ModelManagerOptions<"openai-completions"> {
+	const baseUrl = config?.baseUrl ?? "https://api.intelligence.io.solutions/api/v1";
+	return {
+		providerId: "ionet",
+		dynamicModelsAuthoritative: true,
+		fetchDynamicModels: () =>
+			fetchOpenAICompatibleModels({
+				api: "openai-completions",
+				provider: "ionet",
+				baseUrl,
+				apiKey: config?.apiKey,
+				fetch: config?.fetch,
+				mapModel: mapIonetModel,
+			}),
 	};
 }
 
